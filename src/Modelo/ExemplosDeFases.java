@@ -6,7 +6,7 @@ public class ExemplosDeFases {
         "[TTTTTTTTTTTTTT]\n" +
         "#H............E$\n" +
         "#..............$\n" +
-        "#..C...........$\n" +
+        "#..............$\n" +
         "#..............$\n" +            
         "#..............$\n" +
         "#..TTTTTTTTTT..$\n" + 
@@ -16,7 +16,7 @@ public class ExemplosDeFases {
         "[TTTTTT..TTTTTT$\n" +
         "#C.............$\n" +
         "#TTTTTT..TTTTTT$\n" +
-        "#..............$\n" +
+        "#c.............$\n" +
         "#..............$\n" +
         "#T.TTTTTTTTTTTT$\n" +
         "#..............$\n" + 
@@ -31,7 +31,7 @@ public class ExemplosDeFases {
         "#..............$\n" +
         "#..............$\n" + 
         "#..............$\n" +
-        "#..............$\n" +
+        "#....TTTTTTTTTT$\n" +
         "#..............$\n" +
         "#....I.........$\n" +
         "#..............$\n" +
@@ -40,7 +40,7 @@ public class ExemplosDeFases {
         "#..............$\n" +
         "#..............$\n" +
         "#..............$\n" +
-        "#..............$\n" + 
+        "#.............E$\n" + 
         "<______________>";
     
     public static final String FASE_2 = 
@@ -50,7 +50,7 @@ public class ExemplosDeFases {
         "#........#\n" +
         "#....V...#\n" +
         "#........#\n" +
-        "#.......I#\n" +
+        "#.......E#\n" +
         "##########";
     
     public static final String FASE_3 = 
@@ -63,7 +63,7 @@ public class ExemplosDeFases {
         "#..C......Z#\n" +
         "#..........#\n" +
         "#.........I#\n" +
-        "############";
+        "#####.######";
     
     public static String obterFase(int numeroFase) {
         switch (numeroFase) {
