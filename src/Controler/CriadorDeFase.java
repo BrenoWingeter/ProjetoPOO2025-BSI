@@ -38,6 +38,8 @@ public class CriadorDeFase {
         // Adicionar os outros personagens
         fase.addAll(outrosPersonagens);
         
+        System.out.println("✅ Fase criada com " + fase.size() + " personagens");
+        
         return fase;
     }
     
@@ -57,7 +59,7 @@ public class CriadorDeFase {
                 personagem = new Hero("hero1.png");
                 break;
             case '#':
-                personagem = new Muroe("muroe.png"); // Use uma imagem existente
+                personagem = new Muroe("muroe.png");
                 break;
             case 'I':
                 personagem = new Chaser("caveira.png");
@@ -97,6 +99,21 @@ public class CriadorDeFase {
                 break;
             case 'E':
                 personagem = new Escada("escada.png");
+                break;
+            case 'B':
+                personagem = new EscadaBloqueada("escada_bloqueada.png"); // Imagem diferente para escada bloqueada
+                break;
+            case 'M':
+                personagem = new Moeda("moeda.png"); // Nova classe Moeda
+                break;
+            case 'K':
+                personagem = new Chave("chave.png"); // Nova classe Chave
+                break;
+            case 'D':
+                personagem = new Barril("barril.png"); // Nova classe Barril
+                break;
+            case 'P':
+                personagem = new Pocao("pocao.png"); // Nova classe Poção (para testes)
                 break;
             case '.':
                 break;

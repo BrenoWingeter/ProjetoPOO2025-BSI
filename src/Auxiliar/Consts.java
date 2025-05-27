@@ -3,7 +3,7 @@ package Auxiliar;
 import java.io.File;
 
 public class Consts {
-    public static final int CELL_SIDE = 50;
+    public static final int CELL_SIDE = 35;
     public static final int RES = 16; // visível na tela
     public static final int MUNDO_LARGURA = 16; // total do mundo
     public static final int MUNDO_ALTURA = 40;

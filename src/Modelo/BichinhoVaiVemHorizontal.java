@@ -20,20 +20,60 @@ public class BichinhoVaiVemHorizontal extends Personagem implements Serializable
         super(sNomeImagePNG);
         bRight = true;
         iContador = 0;
+        this.bTransponivel = false; // NÃO pode ser atravessado
+        this.bMortal = true;        // Causa dano ao herói
+    }
+
+    public void voltaAUltimaPosicao(){
+        this.pPosicao.volta();
+    }
+    
+    public boolean setPosicao(int linha, int coluna){
+        if(this.pPosicao.setPosicao(linha, coluna)){
+            if (Desenho.acessoATelaDoJogo() != null && 
+                !Desenho.acessoATelaDoJogo().ehPosicaoValida(this.getPosicao())) {
+                this.voltaAUltimaPosicao();
+                return false;
+            }
+            return true;
+        }
+        return false;       
     }
 
     public void autoDesenho() {
         if (iContador == 5) {
             iContador = 0;
+            
+            boolean conseguiuMover = false;
+            
             if (bRight) {
-                this.setPosicao(pPosicao.getLinha(), pPosicao.getColuna() + 1);
+                // Tentar mover para direita
+                if (this.moveRight()) {
+                    conseguiuMover = true;
+                } else {
+                    // Se não conseguiu, mudar direção
+                    bRight = false;
+                }
             } else {
-                this.setPosicao(pPosicao.getLinha(), pPosicao.getColuna() - 1);
+                // Tentar mover para esquerda
+                if (this.moveLeft()) {
+                    conseguiuMover = true;
+                } else {
+                    // Se não conseguiu, mudar direção
+                    bRight = true;
+                }
             }
-
-            bRight = !bRight;
         }
+        
         super.autoDesenho();
         iContador++;
+    }
+    
+    public boolean moveRight() {
+        return this.setPosicao(pPosicao.getLinha(), pPosicao.getColuna() + 1);
+    }
+
+    public boolean moveLeft() {
+        return this.setPosicao(pPosicao.getLinha(), pPosicao.getColuna() - 1);
     }
 }
