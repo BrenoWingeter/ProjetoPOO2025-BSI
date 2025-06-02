@@ -67,12 +67,10 @@ public class Caveira extends Personagem implements Serializable{
             if (diferencaLinha > 0) {
                 if (this.moveDown()) {
                     conseguiuMover = true;
-                    System.out.println("💀 Caveira se aproximando (BAIXO)");
                 }
             } else if (diferencaLinha < 0) {
                 if (this.moveUp()) {
                     conseguiuMover = true;
-                    System.out.println("💀 Caveira se aproximando (CIMA)");
                 }
             }
             
@@ -81,12 +79,10 @@ public class Caveira extends Personagem implements Serializable{
                 if (diferencaColuna > 0) {
                     if (this.moveRight()) {
                         conseguiuMover = true;
-                        System.out.println("💀 Caveira se aproximando (DIREITA)");
                     }
                 } else if (diferencaColuna < 0) {
                     if (this.moveLeft()) {
                         conseguiuMover = true;
-                        System.out.println("💀 Caveira se aproximando (ESQUERDA)");
                     }
                 }
             }
@@ -95,12 +91,10 @@ public class Caveira extends Personagem implements Serializable{
             if (diferencaColuna > 0) {
                 if (this.moveRight()) {
                     conseguiuMover = true;
-                    System.out.println("💀 Caveira se aproximando (DIREITA)");
                 }
             } else if (diferencaColuna < 0) {
                 if (this.moveLeft()) {
                     conseguiuMover = true;
-                    System.out.println("💀 Caveira se aproximando (ESQUERDA)");
                 }
             }
             
@@ -109,19 +103,16 @@ public class Caveira extends Personagem implements Serializable{
                 if (diferencaLinha > 0) {
                     if (this.moveDown()) {
                         conseguiuMover = true;
-                        System.out.println("💀 Caveira se aproximando (BAIXO)");
                     }
                 } else if (diferencaLinha < 0) {
                     if (this.moveUp()) {
                         conseguiuMover = true;
-                        System.out.println("💀 Caveira se aproximando (CIMA)");
                     }
                 }
             }
         }
         
         if (conseguiuMover && distanciaTotal <= distanciaAtaque + 1) {
-            System.out.println("💀 Caveira entrou em modo de ataque!");
         }
     }
     
@@ -158,7 +149,6 @@ public class Caveira extends Personagem implements Serializable{
         
         f.setPosicao(novaLinha, novaColuna);
         Desenho.acessoATelaDoJogo().addPersonagem(f);
-        System.out.println("🔥 Caveira atirou bola de fogo na direção do herói!");
     }
     
     public void voltaAUltimaPosicao(){

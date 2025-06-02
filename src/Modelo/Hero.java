@@ -2,44 +2,33 @@ package Modelo;
 
 import Auxiliar.Consts;
 import Auxiliar.Desenho;
-import Controler.ControleDeJogo;
 import Controler.Tela;
 import auxiliar.Posicao;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+import java.util.ArrayList;
 
 public class Hero extends Personagem implements Serializable{
     
-    // Sistema de orientação
     private boolean olhandoParaEsquerda = false;
-    private ImageIcon imagemDireita;   // hero1.png
-    private ImageIcon imagemEsquerda;  // hero1_esquerda.png
+    private ImageIcon imagemDireita;
+    private ImageIcon imagemEsquerda;
     
-    // Sistema de ataque (igual ao código anterior)
-    private ImageIcon[][] imagensAtaque; // [direção][frame] - 4 direções x 3 frames cada
+    private ImageIcon[][] imagensAtaque;
     private int contadorAtaque;
-    private final int FRAMES_POR_DIRECAO = 3; // 3 frames (1, 4, 6)
-    private final int TOTAL_FRAMES_ATAQUE = 9; // 3 ciclos por frame
+    private final int FRAMES_POR_DIRECAO = 3;
+    private final int TOTAL_FRAMES_ATAQUE = 9;
     
     public Hero(String sNomeImagePNG) {
         super(sNomeImagePNG);
         this.contadorAtaque = 0;
         
-        // Salvar imagem original (direita)
         this.imagemDireita = this.iImage;
-        
-        // Carregar imagem esquerda
         carregarImagemEsquerda();
-        
-        // Carregar imagens de ataque
         carregarImagensAtaque();
     }
     
@@ -51,7 +40,6 @@ public class Hero extends Personagem implements Serializable{
             if (arquivo.exists()) {
                 ImageIcon imagemTemp = new ImageIcon(caminho);
                 
-                // Redimensionar para o tamanho correto
                 Image img = imagemTemp.getImage();
                 BufferedImage bi = new BufferedImage(Consts.CELL_SIDE, Consts.CELL_SIDE, BufferedImage.TYPE_INT_ARGB);
                 Graphics g = bi.createGraphics();
@@ -70,7 +58,7 @@ public class Hero extends Personagem implements Serializable{
     private void carregarImagensAtaque() {
         imagensAtaque = new ImageIcon[4][FRAMES_POR_DIRECAO];
         String[] sufixosDirecao = {"up", "right", "down", "left"};
-        int[] framesEscolhidos = {1, 4, 6}; // Primeiro, quarto e sexto frame
+        int[] framesEscolhidos = {1, 4, 6};
         
         try {
             for (int direcao = 0; direcao < 4; direcao++) {
@@ -111,15 +99,13 @@ public class Hero extends Personagem implements Serializable{
         int linhaAtaque = pPosicao.getLinha();
         int colunaAtaque = pPosicao.getColuna();
         
-        // Calcular posição do ataque baseado na direção
         switch (direcao) {
-            case 0: linhaAtaque--; break; // Cima
-            case 1: colunaAtaque++; break; // Direita  
-            case 2: linhaAtaque++; break; // Baixo
-            case 3: colunaAtaque--; break; // Esquerda
+            case 0: linhaAtaque--; break;
+            case 1: colunaAtaque++; break;
+            case 2: linhaAtaque++; break;
+            case 3: colunaAtaque--; break;
         }
         
-        // Verificar se há inimigos ou barris na posição de ataque
         Tela tela = Desenho.acessoATelaDoJogo();
         if (tela != null) {
             tela.processarAtaque(linhaAtaque, colunaAtaque);
@@ -129,29 +115,23 @@ public class Hero extends Personagem implements Serializable{
     @Override
     public void autoDesenho() {
         if (atacando) {
-            // Animação de ataque com os 3 frames (1, 4, 6)
             if (contadorAtaque < TOTAL_FRAMES_ATAQUE) {
-                // 3 ciclos por frame (9 total / 3 frames = 3 ciclos por frame)
                 int frameAtual = contadorAtaque / 3;
                 
                 if (frameAtual < FRAMES_POR_DIRECAO) {
-                    // Desenhar o frame atual da direção atual
                     Desenho.desenhar(imagensAtaque[direcao][frameAtual], 
                                    this.pPosicao.getColuna(), 
                                    this.pPosicao.getLinha());
                 } else {
-                    // Fallback para desenho normal
                     desenharNormal();
                 }
                 contadorAtaque++;
             } else {
-                // Fim da animação
                 atacando = false;
                 contadorAtaque = 0;
                 desenharNormal();
             }
         } else {
-            // Desenho normal com orientação
             desenharNormal();
         }
     }
@@ -171,51 +151,108 @@ public class Hero extends Personagem implements Serializable{
         this.pPosicao.volta();
     }
     
-    public boolean setPosicao(int linha, int coluna){
-        if(this.pPosicao.setPosicao(linha, coluna)){
-            if (!Desenho.acessoATelaDoJogo().ehPosicaoValida(this.getPosicao())) {
-                this.voltaAUltimaPosicao();
+    private Personagem verificarBlocoEmpurravel(int linha, int coluna) {
+        Tela tela = Desenho.acessoATelaDoJogo();
+        if (tela != null) {
+            ArrayList<Personagem> fase = tela.getFaseAtual();
+            if (fase != null) {
+                for (Personagem p : fase) {
+                    if ((p instanceof BlocoEmpurravel || 
+                         p instanceof BlocoEmpurravelHorizontal || 
+                         p instanceof BlocoEmpurravelVertical) &&
+                        p.getPosicao().getLinha() == linha && 
+                        p.getPosicao().getColuna() == coluna) {
+                        return p;
+                    }
+                }
             }
-            return true;
         }
-        return false;       
+        return null;
+    }
+    
+    private int calcularDirecaoEmpurrao(int blocoLinha, int blocoColuna) {
+        int heroLinha = this.pPosicao.getLinha();
+        int heroColuna = this.pPosicao.getColuna();
+        
+        int diferencaLinha = blocoLinha - heroLinha;
+        int diferencaColuna = blocoColuna - heroColuna;
+        
+        if (Math.abs(diferencaLinha) >= Math.abs(diferencaColuna)) {
+            if (diferencaLinha > 0) {
+                return 2;
+            } else {
+                return 0;
+            }
+        } else {
+            if (diferencaColuna > 0) {
+                return 1;
+            } else {
+                return 3;
+            }
+        }
+    }
+    
+    public boolean setPosicao(int linha, int coluna){
+        return this.pPosicao.setPosicao(linha, coluna);
     }
 
-    private boolean validaPosicao(){
-        if (!Desenho.acessoATelaDoJogo().ehPosicaoValida(this.getPosicao())) {
-            this.voltaAUltimaPosicao();
-            return false;
+    private boolean tentarMoverComEmpurrao(int novaLinha, int novaColuna){
+        Personagem blocoParaEmpurrar = verificarBlocoEmpurravel(novaLinha, novaColuna);
+        
+        if (blocoParaEmpurrar != null) {
+            int direcaoEmpurrao = calcularDirecaoEmpurrao(novaLinha, novaColuna);
+            boolean empurrou = false;
+            
+            if (blocoParaEmpurrar instanceof BlocoEmpurravel) {
+                empurrou = ((BlocoEmpurravel) blocoParaEmpurrar).empurrar(direcaoEmpurrao);
+            } else if (blocoParaEmpurrar instanceof BlocoEmpurravelHorizontal) {
+                empurrou = ((BlocoEmpurravelHorizontal) blocoParaEmpurrar).empurrar(direcaoEmpurrao);
+            } else if (blocoParaEmpurrar instanceof BlocoEmpurravelVertical) {
+                empurrou = ((BlocoEmpurravelVertical) blocoParaEmpurrar).empurrar(direcaoEmpurrao);
+            }
+            
+            if (empurrou) {
+                return this.setPosicao(novaLinha, novaColuna);
+            } else {
+                return false;
+            }
+        } else {
+            Posicao novaPosicao = new Posicao(novaLinha, novaColuna);
+            if (Desenho.acessoATelaDoJogo().ehPosicaoValida(novaPosicao)) {
+                return this.setPosicao(novaLinha, novaColuna);
+            } else {
+                return false;
+            }
         }
-        return true;       
     }
     
     public boolean moveUp() {
         this.direcao = 0;
-        if(super.moveUp())
-            return validaPosicao();
-        return false;
+        int novaLinha = this.pPosicao.getLinha() - 1;
+        int novaColuna = this.pPosicao.getColuna();
+        return tentarMoverComEmpurrao(novaLinha, novaColuna);
     }
 
     public boolean moveDown() {
         this.direcao = 2;
-        if(super.moveDown())
-            return validaPosicao();
-        return false;
+        int novaLinha = this.pPosicao.getLinha() + 1;
+        int novaColuna = this.pPosicao.getColuna();
+        return tentarMoverComEmpurrao(novaLinha, novaColuna);
     }
 
     public boolean moveRight() {
         this.direcao = 1;
         this.olhandoParaEsquerda = false;
-        if(super.moveRight())
-            return validaPosicao();
-        return false;
+        int novaLinha = this.pPosicao.getLinha();
+        int novaColuna = this.pPosicao.getColuna() + 1;
+        return tentarMoverComEmpurrao(novaLinha, novaColuna);
     }
 
     public boolean moveLeft() {
         this.direcao = 3;
         this.olhandoParaEsquerda = true;
-        if(super.moveLeft())
-            return validaPosicao();
-        return false;
+        int novaLinha = this.pPosicao.getLinha();
+        int novaColuna = this.pPosicao.getColuna() - 1;
+        return tentarMoverComEmpurrao(novaLinha, novaColuna);
     }
 }

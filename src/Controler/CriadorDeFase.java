@@ -1,6 +1,29 @@
 package Controler;
 
-import Modelo.*;
+import Modelo.Hero;
+import Modelo.Muroe;
+import Modelo.Chaser;
+import Modelo.BichinhoVaiVemHorizontal;
+import Modelo.BichinhoVaiVemVertical;
+import Modelo.ZigueZague;
+import Modelo.Caveira;
+import Modelo.Teto;
+import Modelo.CimaEsquerda;
+import Modelo.CimaDireita;
+import Modelo.BaixoEsquerda;
+import Modelo.BaixoDireita;
+import Modelo.Murod;
+import Modelo.Baixo;
+import Modelo.Escada;
+import Modelo.EscadaBloqueada;
+import Modelo.Moeda;
+import Modelo.Chave;
+import Modelo.Barril;
+import Modelo.Pocao;
+import Modelo.BlocoEmpurravel;
+import Modelo.BlocoEmpurravelHorizontal;
+import Modelo.BlocoEmpurravelVertical;
+import Modelo.Personagem;
 import java.util.ArrayList;
 
 public class CriadorDeFase {
@@ -12,7 +35,6 @@ public class CriadorDeFase {
         ArrayList<Personagem> outrosPersonagens = new ArrayList<>();
         heroi = null;
         
-        // Primeiro, criar todos os personagens
         for (int linha = 0; linha < linhasFase.length; linha++) {
             String linhaMapa = linhasFase[linha];
             
@@ -30,15 +52,11 @@ public class CriadorDeFase {
             }
         }
         
-        // Garantir que Hero seja sempre o primeiro (índice 0)
         if (heroi != null) {
             fase.add(heroi);
         }
         
-        // Adicionar os outros personagens
         fase.addAll(outrosPersonagens);
-        
-        System.out.println("✅ Fase criada com " + fase.size() + " personagens");
         
         return fase;
     }
@@ -62,19 +80,19 @@ public class CriadorDeFase {
                 personagem = new Muroe("muroe.png");
                 break;
             case 'I':
-                personagem = new Chaser("caveira.png");
+                personagem = new Chaser("fantasma.png");
                 break;
             case 'O':
-                personagem = new BichinhoVaiVemHorizontal("caveira.png");
+                personagem = new BichinhoVaiVemHorizontal("fantasma.png");
                 break;
             case 'V':
-                personagem = new BichinhoVaiVemVertical("caveira.png");
+                personagem = new BichinhoVaiVemVertical("fantasma.png");
                 break;
             case 'Z':
-                personagem = new ZigueZague("robo.png");
+                personagem = new ZigueZague("fantasma.png");
                 break;
             case 'C':
-                personagem = new Caveira("orc_mago.png");
+                personagem = new Caveira("fantasma_mago.png");
                 break;
             case 'T':
                 personagem = new Teto("teto.png");
@@ -101,28 +119,36 @@ public class CriadorDeFase {
                 personagem = new Escada("escada.png");
                 break;
             case 'B':
-                personagem = new EscadaBloqueada("escada_bloqueada.png"); // Imagem diferente para escada bloqueada
+                personagem = new EscadaBloqueada("escada_bloqueada.png");
                 break;
             case 'M':
-                personagem = new Moeda("moeda.png"); // Nova classe Moeda
+                personagem = new Moeda("moeda.png");
                 break;
             case 'K':
-                personagem = new Chave("chave.png"); // Nova classe Chave
+                personagem = new Chave("chave.png");
                 break;
             case 'D':
-                personagem = new Barril("barril.png"); // Nova classe Barril
+                personagem = new Barril("barril.png");
                 break;
             case 'P':
-                personagem = new Pocao("pocao.png"); // Nova classe Poção (para testes)
+                personagem = new Pocao("pocao.png");
+                break;
+            case 'Q':
+                personagem = new BlocoEmpurravel("bloco.png");
+                break;
+            case 'X':
+                personagem = new BlocoEmpurravelHorizontal("bloco_horizontal.png");
+                break;
+            case 'L':
+                personagem = new BlocoEmpurravelVertical("bloco_vertical.png");
                 break;
             case '.':
                 break;
             default:
-                return null; // Espaço vazio
+                return null;
         }
         
         if (personagem != null) {
-            // Usar o método da superclasse para evitar validação durante criação
             personagem.getPosicao().setPosicao(linha, coluna);
         }
         

@@ -62,7 +62,6 @@ public class Chaser extends Personagem implements Serializable {
         
         // Se estiver muito perto (1 célula), parar
         if (distanciaTotal <= 1) {
-            System.out.println("Chaser parou - muito perto do herói!");
             return;
         }
         
@@ -75,13 +74,11 @@ public class Chaser extends Personagem implements Serializable {
                 // Herói está abaixo
                 if (this.moveDown()) {
                     conseguiuMover = true;
-                    System.out.println("Chaser moveu para BAIXO (perseguindo)");
                 }
             } else if (diferencaLinha < 0) {
                 // Herói está acima
                 if (this.moveUp()) {
                     conseguiuMover = true;
-                    System.out.println("Chaser moveu para CIMA (perseguindo)");
                 }
             }
             
@@ -91,13 +88,11 @@ public class Chaser extends Personagem implements Serializable {
                     // Herói está à direita
                     if (this.moveRight()) {
                         conseguiuMover = true;
-                        System.out.println("Chaser moveu para DIREITA (perseguindo)");
                     }
                 } else if (diferencaColuna < 0) {
                     // Herói está à esquerda
                     if (this.moveLeft()) {
                         conseguiuMover = true;
-                        System.out.println("Chaser moveu para ESQUERDA (perseguindo)");
                     }
                 }
             }
@@ -107,13 +102,11 @@ public class Chaser extends Personagem implements Serializable {
                 // Herói está à direita
                 if (this.moveRight()) {
                     conseguiuMover = true;
-                    System.out.println("Chaser moveu para DIREITA (perseguindo)");
                 }
             } else if (diferencaColuna < 0) {
                 // Herói está à esquerda
                 if (this.moveLeft()) {
                     conseguiuMover = true;
-                    System.out.println("Chaser moveu para ESQUERDA (perseguindo)");
                 }
             }
             
@@ -123,20 +116,16 @@ public class Chaser extends Personagem implements Serializable {
                     // Herói está abaixo
                     if (this.moveDown()) {
                         conseguiuMover = true;
-                        System.out.println("Chaser moveu para BAIXO (perseguindo)");
                     }
                 } else if (diferencaLinha < 0) {
                     // Herói está acima
                     if (this.moveUp()) {
-                        conseguiuMover = true;
-                        System.out.println("Chaser moveu para CIMA (perseguindo)");
                     }
                 }
             }
         }
         
         if (!conseguiuMover) {
-            System.out.println("Chaser bloqueado - não conseguiu se mover!");
         }
     }
 }

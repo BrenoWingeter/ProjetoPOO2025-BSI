@@ -13,12 +13,12 @@ import Modelo.Barril;
 import Modelo.Pocao;
 import Modelo.Moeda;
 import Modelo.Chave;
+import Modelo.BlocoEmpurravel;
+import Modelo.BlocoEmpurravelHorizontal;
+import Modelo.BlocoEmpurravelVertical;
 import Auxiliar.Consts;
 import Auxiliar.Desenho;
-import Modelo.BichinhoVaiVemVertical;
-import Modelo.ZigueZague;
 import auxiliar.Posicao;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -28,7 +28,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.Font;
 import java.awt.Color;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,9 +38,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-import javax.swing.JButton;
 
 public class Tela extends javax.swing.JFrame implements MouseListener, KeyListener {
 
@@ -78,8 +74,16 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
         return cameraColuna;
     }
 
+    public ArrayList<Personagem> getFaseAtual() {
+        return this.faseAtual;
+    }
+
     public boolean ehPosicaoValida(Posicao p) {
         return cj.ehPosicaoValida(this.faseAtual, p);
+    }
+    
+    public boolean ehPosicaoValidaParaBloco(Posicao p, Personagem bloco) {
+        return cj.ehPosicaoValidaParaBloco(this.faseAtual, p, bloco);
     }
 
     public void addPersonagem(Personagem umPersonagem) {
@@ -96,12 +100,8 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
 
     public void paint(Graphics gOld) {
         Graphics g = this.getBufferStrategy().getDrawGraphics();
-        /*Criamos um contexto gráfico*/
         g2 = g.create(getInsets().left, getInsets().top, getWidth() - getInsets().right, getHeight() - getInsets().top);
         
-        /**
-         * ***********Desenha cenário de fundo*************
-         */
         for (int i = 0; i < Consts.RES; i++) {
             for (int j = 0; j < Consts.RES; j++) {
                 int mapaLinha = cameraLinha + i;
@@ -126,7 +126,6 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
             this.cj.processaTudo(faseAtual);
         }
 
-        // Desenhar HUD (informações do jogador)
         desenharHUD(g2);
 
         g.dispose();
@@ -141,14 +140,12 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
             g.setFont(new Font("Arial", Font.BOLD, 14));
             g.setColor(Color.WHITE);
             
-            // Informações do herói
             g.drawString("Vida: " + hero.getVida(), 10, 25);
             g.drawString("Pontuação: " + hero.getPontuacao(), 10, 45);
             g.drawString("Moedas: " + hero.getMoedas(), 10, 65);
             g.drawString("Chaves: " + hero.getChaves(), 10, 85);
             g.drawString("Fase: " + faseAtualNumero, 10, 105);
             
-            // Verificar se o herói morreu
             if (!hero.estaVivo()) {
                 g.setFont(new Font("Arial", Font.BOLD, 48));
                 g.setColor(Color.RED);
@@ -172,52 +169,33 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
     public void processarAtaque(int linha, int coluna) {
         if (faseAtual == null) return;
         
-        boolean atingiuAlgo = false;
-        System.out.println(" Atacando posição: linha=" + linha + ", coluna=" + coluna);
-        
-        // SISTEMA FACILITADO: Verificar área 3x3 ao redor do ataque
         for (int deltaLinha = -1; deltaLinha <= 1; deltaLinha++) {
             for (int deltaColuna = -1; deltaColuna <= 1; deltaColuna++) {
                 int linhaVerificar = linha + deltaLinha;
                 int colunaVerificar = coluna + deltaColuna;
                 
-                // Verificar se há algum personagem nesta posição
                 for (int i = faseAtual.size() - 1; i >= 1; i--) {
                     Personagem p = faseAtual.get(i);
                     
                     if (p.getPosicao().getLinha() == linhaVerificar && 
                         p.getPosicao().getColuna() == colunaVerificar) {
                         
-                        System.out.println("Encontrou " + p.getClass().getSimpleName() + " próximo!");
-                        
-                        // Verificar se é um barril
                         if (p instanceof Barril) {
                             Barril barril = (Barril) p;
                             barril.quebrar();
-                            System.out.println("Baú destruído!");
-                            atingiuAlgo = true;
                             continue;
                         }
                         
-                        // Verificar se é inimigo (qualquer classe mortal)
                         if (p.isbMortal() || p instanceof Chaser || p instanceof Caveira || 
                             p instanceof BichinhoVaiVemHorizontal || p instanceof BichinhoVaiVemVertical || 
                             p instanceof ZigueZague) {
                             
                             faseAtual.remove(p);
                             hero.adicionarPontuacao(75);
-                            System.out.println(p.getClass().getSimpleName() + " eliminado! +75 pontos!");
-                            atingiuAlgo = true;
                         }
                     }
                 }
             }
-        }
-        
-        if (!atingiuAlgo) {
-            System.out.println("Nenhum inimigo próximo!");
-        } else {
-            System.out.println("Ataque bem-sucedido!");
         }
     }
 
@@ -227,21 +205,16 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
         int heroLinha = hero.getPosicao().getLinha();
         int heroColuna = hero.getPosicao().getColuna();
         
-        // Verificar todas as 8 direções ao redor do herói (incluindo diagonais)
         int[] deltaLinhas = {-1, -1, -1, 0, 0, 1, 1, 1};
         int[] deltaColunas = {-1, 0, 1, -1, 1, -1, 0, 1};
-        
-        boolean escadaEncontrada = false;
         
         for (int i = 0; i < 8; i++) {
             int novaLinha = heroLinha + deltaLinhas[i];
             int novaColuna = heroColuna + deltaColunas[i];
             
-            // Verificar se a posição está dentro dos limites do mapa
             if (novaLinha >= 0 && novaLinha < Consts.MUNDO_ALTURA && 
                 novaColuna >= 0 && novaColuna < Consts.MUNDO_LARGURA) {
                 
-                // Procurar escada bloqueada nesta posição
                 for (Personagem p : faseAtual) {
                     if (p instanceof EscadaBloqueada) {
                         EscadaBloqueada escadaBloqueada = (EscadaBloqueada) p;
@@ -253,39 +226,22 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
                                 if (hero.getChaves() > 0) {
                                     hero.usarChave();
                                     escadaBloqueada.desbloquear();
-                                    System.out.println("Escada desbloqueada com sucesso!");
-                                    System.out.println("Chaves restantes: " + hero.getChaves());
-                                    System.out.println("Agora você pode pisar na escada para avançar!");
-                                    escadaEncontrada = true;
-                                    repaint(); // Atualizar a tela imediatamente
-                                } else {
-                                    System.out.println("Você precisa de uma chave para desbloquear esta escada!");
-                                    escadaEncontrada = true;
+                                    repaint();
                                 }
-                            } else {
-                                System.out.println("Esta escada já está desbloqueada!");
-                                escadaEncontrada = true;
                             }
                         }
                     }
                 }
             }
         }
-        
-        if (!escadaEncontrada) {
-            System.out.println("Nenhuma escada bloqueada encontrada ao seu redor.");
-            System.out.println("Dica: Fique perto de uma escada bloqueada e pressione E!");
-        }
     }
 
     private void verificarEscada() {
         if (hero != null && faseAtual != null && hero.estaVivo()) {
             for (Personagem p : faseAtual) {
-                // Verificar escada normal
                 if (p instanceof Escada) {
                     if (hero.getPosicao().igual(p.getPosicao())) {
-                        if (faseAtualNumero == 6) {
-                            // Na fase final, verificar se coletou todas as moedas
+                        if (faseAtualNumero == 5) {
                             boolean temMoedas = false;
                             for (Personagem moeda : faseAtual) {
                                 if (moeda instanceof Moeda) {
@@ -295,35 +251,21 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
                             }
                             
                             if (!temMoedas) {
-                                System.out.println("Parabéns! Você completou o jogo!");
                                 mostrarTelaFinal();
-                            } else {
-                                System.out.println("Colete todas as moedas antes de finalizar o jogo!");
                             }
                         } else {
-                            System.out.println("Pisando na escada normal - Avançando para próxima fase!");
                             proximaFase();
                         }
                         return;
                     }
                 }
                 
-                // Verificar escada desbloqueada
                 if (p instanceof EscadaBloqueada) {
                     EscadaBloqueada escadaBloqueada = (EscadaBloqueada) p;
                     if (hero.getPosicao().igual(p.getPosicao())) {
                         if (!escadaBloqueada.isBloqueada()) {
-                            if (faseAtualNumero == 5) {
-                                // FASE 5: Ir direto para créditos
-                                System.out.println("Fase 5 completada! Mostrando créditos finais!");
-                                mostrarTelaFinal();
-                            } else {
-                                System.out.println("Pisando na escada desbloqueada - Avançando para próxima fase!");
-                                proximaFase();
-                            }
+                            proximaFase();
                             return;
-                        } else {
-                            System.out.println("Esta escada ainda está bloqueada! Pressione E perto dela para tentar abrir.");
                         }
                     }
                 }
@@ -332,16 +274,9 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
     }
 
     private void proximaFase() {
-        if (faseAtualNumero < 6) { // Agora são 6 fases
+        if (faseAtualNumero < 5) {
             faseAtualNumero++;
             
-            if (faseAtualNumero == 6) {
-                // Fase final especial - mostrar tela de créditos após coletar todas as moedas
-                mostrarFaseFinal();
-                return;
-            }
-            
-            // Manter estatísticas do herói entre as fases
             int vidaAtual = hero.getVida();
             int pontuacaoAtual = hero.getPontuacao();
             int moedasAtuais = hero.getMoedas();
@@ -350,35 +285,13 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
             faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(faseAtualNumero));
             hero = criadorDeFase.getHeroi();
             
-            // Restaurar estatísticas
             hero.setVida(vidaAtual);
             hero.setPontuacao(pontuacaoAtual);
             hero.setMoedas(moedasAtuais);
             hero.setChaves(chavesAtuais);
             
             this.atualizaCamera();
-            System.out.println("🏆 Avançou para a Fase " + faseAtualNumero + "!");
         }
-    }
-
-    private void mostrarFaseFinal() {
-        // Carregar fase final
-        int vidaAtual = hero.getVida();
-        int pontuacaoAtual = hero.getPontuacao();
-        int moedasAtuais = hero.getMoedas();
-        int chavesAtuais = hero.getChaves();
-        
-        faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(6));
-        hero = criadorDeFase.getHeroi();
-        
-        // Restaurar estatísticas
-        hero.setVida(vidaAtual);
-        hero.setPontuacao(pontuacaoAtual);
-        hero.setMoedas(moedasAtuais);
-        hero.setChaves(chavesAtuais);
-        
-        this.atualizaCamera();
-        System.out.println("🎉 FASE FINAL! Colete todas as moedas e pise na escada para ver os créditos!");
     }
 
     private void mostrarTelaFinal() {
@@ -402,7 +315,7 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
 
     public void keyPressed(KeyEvent e) {
         if (jogoTerminado) {
-            return; // Não processar teclas se o jogo terminou
+            return;
         }
         
         if (e.getKeyCode() == KeyEvent.VK_C) {
@@ -428,26 +341,10 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
                 verificarEscada();
             }
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-            // Atacar
             if (hero != null && hero.estaVivo() && !hero.isAtacando()) {
                 hero.atacar();
             }
-        } else if (e.getKeyCode() == KeyEvent.VK_Y) {
-            // TESTE: Carregar fase de teste da Caveira
-            System.out.println("Carregando fase de teste da Caveira...");
-            faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(-1));
-            hero = criadorDeFase.getHeroi();
-            faseAtualNumero = -1;
-            this.atualizaCamera();
-        } else if (e.getKeyCode() == KeyEvent.VK_T) {
-            // TESTE: Carregar fase de teste com Chaser
-            System.out.println("🧪 Carregando fase de teste...");
-            faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(0));
-            hero = criadorDeFase.getHeroi();
-            faseAtualNumero = 0;
-            this.atualizaCamera();
         } else if (e.getKeyCode() == KeyEvent.VK_E) {
-            // Interagir com escadas bloqueadas ao redor
             if (hero != null && hero.estaVivo()) {
                 interagirComEscadas();
             }
@@ -456,7 +353,6 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
         } else if (e.getKeyCode() == KeyEvent.VK_L) {
             carregarFase("fase_salva.ser");
         } else if (e.getKeyCode() == KeyEvent.VK_R) {
-            // Reiniciar fase
             faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(faseAtualNumero));
             hero = criadorDeFase.getHeroi();
             this.atualizaCamera();
@@ -541,9 +437,7 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(nomeArquivo))) {
             oos.writeObject(faseAtual);
             oos.writeInt(faseAtualNumero);
-            System.out.println("Fase salva com sucesso em " + nomeArquivo);
         } catch (IOException e) {
-            System.out.println("Erro ao salvar a fase: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -554,24 +448,18 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
             faseAtual = (ArrayList<Personagem>) ois.readObject();
             faseAtualNumero = ois.readInt();
 
-            // Atualiza o cenário para cada personagem
             for (Personagem p : faseAtual) {
                 Desenho.setCenario(this);
             }
-            // Reatribui o herói
             for (Personagem p : faseAtual) {
                 if (p instanceof Hero) {
                     hero = (Hero) p;
                     break;
                 }
             }
-            // Atualiza a câmera com base no novo herói
             atualizaCamera();
-
-            System.out.println("Fase carregada com sucesso!");
             repaint();
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Erro ao carregar a fase: " + e.getMessage());
             e.printStackTrace();
         }
     }
