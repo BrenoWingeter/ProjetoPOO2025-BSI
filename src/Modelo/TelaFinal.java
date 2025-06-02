@@ -55,7 +55,7 @@ public class TelaFinal extends JFrame {
         creditos2.setForeground(Color.GREEN);
         creditos2.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        JLabel creditos3 = new JLabel("Gabriel");
+        JLabel creditos3 = new JLabel("Gabriel de Oliveira Merenciano");
         creditos3.setFont(new Font("Arial", Font.BOLD, 24));
         creditos3.setForeground(Color.GREEN);
         creditos3.setAlignmentX(Component.CENTER_ALIGNMENT);

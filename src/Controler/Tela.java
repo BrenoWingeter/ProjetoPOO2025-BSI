@@ -48,7 +48,7 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
     private int cameraLinha = 0;
     private int cameraColuna = 0;
     private CriadorDeFase criadorDeFase;
-    private int faseAtualNumero = 1;
+    private int faseAtualNumero = 1; // Alterado para começar na fase 5
     private boolean jogoTerminado = false;
 
     public Tela() {
@@ -61,7 +61,7 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
                 Consts.RES * Consts.CELL_SIDE + getInsets().top + getInsets().bottom);
 
         criadorDeFase = new CriadorDeFase();
-        faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(1));
+        faseAtual = criadorDeFase.criarFase(ExemplosDeFases.obterFase(1)); // alterar aqui para mudar as fases direto
         hero = criadorDeFase.getHeroi();
         this.atualizaCamera();
     }
@@ -241,18 +241,9 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
             for (Personagem p : faseAtual) {
                 if (p instanceof Escada) {
                     if (hero.getPosicao().igual(p.getPosicao())) {
+                        // Se estiver na fase 5, sempre mostrar tela final (removida verificação de moedas)
                         if (faseAtualNumero == 5) {
-                            boolean temMoedas = false;
-                            for (Personagem moeda : faseAtual) {
-                                if (moeda instanceof Moeda) {
-                                    temMoedas = true;
-                                    break;
-                                }
-                            }
-                            
-                            if (!temMoedas) {
-                                mostrarTelaFinal();
-                            }
+                            mostrarTelaFinal();
                         } else {
                             proximaFase();
                         }
@@ -264,7 +255,12 @@ public class Tela extends javax.swing.JFrame implements MouseListener, KeyListen
                     EscadaBloqueada escadaBloqueada = (EscadaBloqueada) p;
                     if (hero.getPosicao().igual(p.getPosicao())) {
                         if (!escadaBloqueada.isBloqueada()) {
-                            proximaFase();
+                            // Se estiver na fase 5, sempre mostrar tela final
+                            if (faseAtualNumero == 5) {
+                                mostrarTelaFinal();
+                            } else {
+                                proximaFase();
+                            }
                             return;
                         }
                     }
